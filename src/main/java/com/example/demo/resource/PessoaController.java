@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,47 +16,44 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.Pessoa;
-import com.example.demo.repository.PessoaRepository;
+import com.example.demo.service.PessoaService;
 
 @RestController
 @RequestMapping("/pessoa")
 public class PessoaController {
 
-	private final PessoaRepository pessoaRepository;
-
-	public PessoaController(PessoaRepository pessoaRepository) {
-		this.pessoaRepository = pessoaRepository;
-	}
+	@Autowired
+	private PessoaService pessoaService;
 
 	@GetMapping
 	public List<Pessoa> getPessoas() {
-		return pessoaRepository.findAll();
+		return pessoaService.findAll();
 	}
 
 	@GetMapping("/{id}")
 	public Pessoa getPessoa(@PathVariable Long id) {
-		return pessoaRepository.findById(id).orElseThrow(RuntimeException::new);
+		return pessoaService.findById(id).orElseThrow(RuntimeException::new);
 	}
 
 	@PostMapping
 	public ResponseEntity createClient(@RequestBody Pessoa pessoa) throws URISyntaxException {
-		Pessoa savedClient = pessoaRepository.save(pessoa);
+		Pessoa savedClient = pessoaService.save(pessoa);
 		return ResponseEntity.created(new URI("/clients/" + savedClient.getId())).body(savedClient);
 	}
 
 	@PutMapping("/{id}")
 	public ResponseEntity updateClient(@PathVariable Long id, @RequestBody Pessoa client) {
-		Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(RuntimeException::new);
+		Pessoa pessoa = pessoaService.findById(id).orElseThrow(RuntimeException::new);
 		pessoa.setNome(client.getNome());
 		pessoa.setEmail(client.getEmail());
-		pessoa = pessoaRepository.save(client);
+		pessoa = pessoaService.save(client);
 
 		return ResponseEntity.ok(pessoa);
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity deleteClient(@PathVariable Long id) {
-		pessoaRepository.deleteById(id);
+		pessoaService.deleteById(id);
 		return ResponseEntity.ok().build();
 	}
 
